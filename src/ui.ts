@@ -356,14 +356,14 @@ export class TerminalUI {
           ? chalk.red('DUPLICATE')
           : chalk.green('NEW');
         
-        const description = transaction.isDuplicate 
+        const payee = transaction.isDuplicate 
           ? chalk.gray(transaction.imported_payee)
           : transaction.imported_payee;
         
         table.push([
           transaction.date,
-          description,
-          transaction.payee_name,
+          transaction.notes ? (transaction.notes.length > 22 ? transaction.notes.slice(0, 22) + '...' : transaction.notes) : '',
+          payee,
           amountDisplay,
           accountNames[transaction.account] || 'Unknown',
           status
