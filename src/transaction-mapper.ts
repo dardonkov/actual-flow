@@ -30,9 +30,9 @@ export class TransactionMapper {
         } catch (error: any) {
           console.warn(`Invalid regex pattern in mapping: ${error.message}`);
           lfTransaction.merchant = '';
+        }
       }
     }
-  }
 
     return {
       date: lfTransaction.date,
