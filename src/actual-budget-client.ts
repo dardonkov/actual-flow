@@ -6,14 +6,16 @@ import path from 'path';
 export class ActualBudgetClient {
   private serverUrl: string;
   private budgetSyncId: string;
-  private password?: string;
+  private serverPassword: string;
+  private encryptionPassword?: string;
   private connected: boolean = false;
   private dataDir: string;
 
-  constructor(serverUrl: string, budgetSyncId: string, password?: string) {
+  constructor(serverUrl: string, budgetSyncId: string, serverPassword: string, encryptionPassword?: string) {
     this.serverUrl = serverUrl;
     this.budgetSyncId = budgetSyncId;
-    this.password = password;
+    this.serverPassword = serverPassword;
+    this.encryptionPassword = encryptionPassword;
     this.dataDir = './actual-data'; // Local cache directory
   }
 
@@ -27,11 +29,17 @@ export class ActualBudgetClient {
       await actualAPI.init({
         dataDir: this.dataDir,
         serverURL: this.serverUrl,
-        password: this.password,
+        password: this.serverPassword,
       });
       
-      // Download the budget to local cache
-      await actualAPI.downloadBudget(this.budgetSyncId);
+      // Download the budget to local cache with encryption support
+      if (this.encryptionPassword && this.encryptionPassword.trim() !== '') {
+        await actualAPI.downloadBudget(this.budgetSyncId, {
+          password: this.encryptionPassword,
+        });
+      } else {
+        await actualAPI.downloadBudget(this.budgetSyncId);
+      }
       
       this.connected = true;
       return true;
@@ -83,6 +91,50 @@ export class ActualBudgetClient {
     }
   }
 
+  async getTransactions(accountId?: string): Promise<ActualBudgetTransaction[]> {
+    if (!this.connected) {
+      await this.connect();
+    }
+
+    try {
+      let transactions;
+      if (accountId) {
+        // Get transactions for a specific account
+        transactions = await actualAPI.getTransactions(accountId, null, null);
+      } else {
+        // Get transactions for all accounts
+        const accounts = await this.getAccounts();
+        const allTransactions: any[] = [];
+        
+        for (const account of accounts) {
+          try {
+            const accountTransactions = await actualAPI.getTransactions(account.id, null, null);
+            allTransactions.push(...accountTransactions);
+          } catch (error: any) {
+            console.warn(`Failed to fetch transactions for account ${account.name}:`, error.message);
+            // Continue with other accounts
+          }
+        }
+        transactions = allTransactions;
+      }
+
+      return transactions.map((transaction: any) => ({
+        id: transaction.id,
+        date: transaction.date,
+        amount: transaction.amount,
+        imported_payee: transaction.imported_payee || transaction.payee_name || '',
+        payee_name: transaction.payee_name || '',
+        account: transaction.account,
+        cleared: transaction.cleared,
+        notes: transaction.notes,
+        imported_id: transaction.imported_id,
+      }));
+    } catch (error: any) {
+      console.error('Failed to fetch Actual Budget transactions:', error.message);
+      throw new Error(`Failed to fetch transactions: ${error.message}`);
+    }
+  }
+
   async importTransactions(transactions: ActualBudgetTransaction[]): Promise<void> {
     if (!this.connected) {
       await this.connect();
@@ -129,7 +181,7 @@ export class ActualBudgetClient {
       await actualAPI.init({
         dataDir: this.dataDir,
         serverURL: this.serverUrl,
-        password: this.password,
+        password: this.serverPassword,
       });
       
       const budgets = await actualAPI.getBudgets();

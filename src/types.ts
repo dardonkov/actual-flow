@@ -25,6 +25,8 @@ export interface ActualBudgetTransaction {
   cleared?: boolean;
   notes?: string;
   imported_id?: string;
+  isDuplicate?: boolean;
+  duplicateOf?: string; // ID of the existing transaction this duplicates
 }
 
 export interface ActualBudgetAccount {
@@ -55,7 +57,9 @@ export interface Config {
   actualBudget: {
     serverUrl: string;
     budgetSyncId: string;
-    password?: string;
+    password: string; // Server password (backward compatible)
+    encryptionPassword?: string; // Optional password for end-to-end encryption
+    duplicateCheckingAcrossAccounts?: boolean; // Check for duplicate transactions across all accounts before import
   };
   accountMappings: AccountMapping[];
 }
