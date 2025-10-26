@@ -206,7 +206,7 @@ export class LunchFlowImporter {
         }
         return;
       }
-
+      
       const mapper = new TransactionMapper(this.config.accountMappings);
       const abTransactions = mapper.mapTransactions(allLfTransactions);
 

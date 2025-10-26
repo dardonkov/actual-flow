@@ -310,7 +310,7 @@ export class TerminalUI {
     }, {} as Record<string, string>);
 
     const table = new Table({
-      head: ['Date', 'Description', 'Amount', 'Account'],
+      head: ['Date', 'Description', 'Payee', 'Amount', 'Account'],
       colWidths: [12, 30, 12, 20],
       style: {
         head: ['cyan'],
@@ -329,7 +329,8 @@ export class TerminalUI {
         
         table.push([
           transaction.date,
-          transaction.imported_payee,
+          transaction.notes,
+          transaction.payee_name,
           amountDisplay,
           accountNames[transaction.account] || 'Unknown'
         ]);
