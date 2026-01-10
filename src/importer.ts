@@ -15,8 +15,8 @@ export class LunchFlowImporter {
   private ui: TerminalUI;
   private config: Config | null = null;
 
-  constructor() {
-    this.configManager = new ConfigManager();
+  constructor(configPath?: string) {
+    this.configManager = new ConfigManager(configPath);
     this.ui = new TerminalUI();
     this.config = this.configManager.loadConfig();
     

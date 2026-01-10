@@ -6,11 +6,24 @@ import { LunchFlowImporter } from './importer';
 
 async function main() {
   try {
-    const importer = new LunchFlowImporter();
-    
-    // Check for command line arguments
+    // Parse command line arguments
     const args = process.argv.slice(2);
-    const command = args[0];
+    let configPath: string | undefined;
+    let command: string | undefined;
+    
+    // Extract --config flag and its value
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === '--config' && i + 1 < args.length) {
+        configPath = args[i + 1];
+        i++; // skip the next argument
+      } else if (args[i].startsWith('--config=')) {
+        configPath = args[i].split('=')[1];
+      } else if (!command) {
+        command = args[i];
+      }
+    }
+    
+    const importer = new LunchFlowImporter(configPath);
     
     if (command === 'import') {
       // Direct import command - skip the interactive menu
@@ -33,15 +46,19 @@ async function main() {
 
 function showHelp() {
   console.log(chalk.blue.bold('\n🍽️  Lunch Flow → Actual Budget Importer\n'));
-  console.log(chalk.gray('Usage: actual-flow [command]\n'));
+  console.log(chalk.gray('Usage: actual-flow [command] [options]\n'));
   console.log(chalk.cyan('Commands:'));
   console.log('  import    Run the import process directly (non-interactive)');
   console.log('  help      Show this help message');
   console.log('  (no args) Run in interactive mode\n');
+  console.log(chalk.cyan('Options:'));
+  console.log('  --config <path>   Specify a custom config file (default: config.json)');
+  console.log('  --config=<path>   Alternative syntax for specifying config file\n');
   console.log(chalk.gray('Examples:'));
-  console.log('  actual-flow import    # Run import directly');
-  console.log('  actual-flow           # Run interactive mode');
-  console.log('  actual-flow help      # Show help\n');
+  console.log('  actual-flow import                        # Run import with default config.json');
+  console.log('  actual-flow --config prod.json    # Run interactive mode with custom config');
+  console.log('  actual-flow import --config prod.json     # Run import with custom config');
+  console.log('  actual-flow help                          # Show help\n');
 }
 
 // Handle uncaught exceptions

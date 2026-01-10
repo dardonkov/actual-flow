@@ -21,6 +21,7 @@ actual-data/
 
 # Configuration
 config.json
+*.config.json
 
 # IDE
 .vscode/
