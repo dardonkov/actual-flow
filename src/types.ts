@@ -1,12 +1,13 @@
 export type LunchFlowAccountId = number;
 export interface LunchFlowTransaction {
-  id: string;
+  id: string | null; // Can be null for pending transactions
   accountId: LunchFlowAccountId;
   date: string;
   amount: number;
   currency: string;
   merchant: string;
   description: string;
+  isPending?: boolean;
 }
 
 export interface LunchFlowAccount {
@@ -27,6 +28,7 @@ export interface ActualBudgetTransaction {
   imported_id?: string;
   isDuplicate?: boolean;
   duplicateOf?: string; // ID of the existing transaction this duplicates
+  isPending?: boolean;
 }
 
 export interface ActualBudgetAccount {
@@ -47,6 +49,7 @@ export interface AccountMapping {
     pattern: string;
     flags?: string;
   };
+  includePending?: boolean;
 }
 
 export interface Config {
